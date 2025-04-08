@@ -61,8 +61,8 @@ def block_to_html_node(block):
                 quote_text = line.lstrip(">").strip()
                 quote_lines.append(quote_text)
         
-        # Join the lines with newlines and create a blockquote with the text directly
-        quote_text = "\n".join(quote_lines)
+        # Join the lines with spaces and create a blockquote with the text directly
+        quote_text = " ".join(quote_lines)
         return ParentNode("blockquote", text_to_children(quote_text))
     elif block_type == BlockType.UNORDERED_LIST:
         # Split into list items and process each
