@@ -59,11 +59,15 @@ def generate_page(from_path, template_path, dest_path, basepath="/"):
     title = extract_title(markdown)
     
     # Replace placeholders in the template
-    html = template.replace("{{ Title }}", title).replace("{{ Content }}", content)
+    html = template.replace("{{ Title }}", title).replace("{{ Content }}", content).replace("{{ BaseURL }}", basepath)
     
     # Replace root-relative paths with basepath
     html = html.replace('href="/', f'href="{basepath}')
     html = html.replace('src="/', f'src="{basepath}')
+    
+    # Replace content/ paths with basepath
+    html = html.replace('href="content/', f'href="{basepath}')
+    html = html.replace('src="content/', f'src="{basepath}')
     
     # Create the destination directory if it doesn't exist
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
