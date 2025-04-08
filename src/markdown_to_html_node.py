@@ -50,8 +50,19 @@ def block_to_html_node(block):
         # Preserve newlines in code blocks
         return ParentNode("pre", [ParentNode("code", [LeafNode(None, code_text + "\n")])])
     elif block_type == BlockType.QUOTE:
-        # Remove the > prefix from each line and join with spaces
-        quote_text = " ".join(line[2:].strip() for line in block.split("\n"))
+        # Split into lines and process each line
+        lines = block.split("\n")
+        quote_lines = []
+        
+        for line in lines:
+            # Skip empty lines or lines that are just ">"
+            if line.strip() and line.strip() != ">":
+                # Remove "> " prefix and strip whitespace
+                quote_text = line.lstrip(">").strip()
+                quote_lines.append(quote_text)
+        
+        # Join the lines with newlines and create a blockquote with the text directly
+        quote_text = "\n".join(quote_lines)
         return ParentNode("blockquote", text_to_children(quote_text))
     elif block_type == BlockType.UNORDERED_LIST:
         # Split into list items and process each

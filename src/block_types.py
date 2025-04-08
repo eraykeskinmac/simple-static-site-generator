@@ -20,9 +20,9 @@ def block_to_block_type(block):
     if block.startswith("```") and block.endswith("```"):
         return BlockType.CODE
     
-    # Check for quote blocks (every line starts with > and space)
+    # Check for quote blocks (any line starts with > and space)
     lines = block.split("\n")
-    if all(line.startswith("> ") for line in lines):
+    if any(line.startswith("> ") for line in lines):
         return BlockType.QUOTE
     
     # Check for unordered lists (every line starts with - and space)

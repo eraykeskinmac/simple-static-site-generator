@@ -1,6 +1,8 @@
 import os
 import shutil
 import logging
+from markdown_to_html_node import markdown_to_html_node
+from extract_title import extract_title
 
 def copy_static_to_public(source_dir, dest_dir):
     """
@@ -34,6 +36,37 @@ def copy_static_to_public(source_dir, dest_dir):
     # Start the recursive copy
     copy_recursive(source_dir, dest_dir)
 
+def generate_page(from_path, template_path, dest_path):
+    """
+    Generate an HTML page from a markdown file using a template.
+    """
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    
+    # Read the markdown file
+    with open(from_path, "r") as f:
+        markdown = f.read()
+    
+    # Read the template file
+    with open(template_path, "r") as f:
+        template = f.read()
+    
+    # Convert markdown to HTML
+    html_node = markdown_to_html_node(markdown)
+    content = html_node.to_html()
+    
+    # Extract the title
+    title = extract_title(markdown)
+    
+    # Replace placeholders in the template
+    html = template.replace("{{ Title }}", title).replace("{{ Content }}", content)
+    
+    # Create the destination directory if it doesn't exist
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+    
+    # Write the HTML file
+    with open(dest_path, "w") as f:
+        f.write(html)
+
 def main():
     # Set up logging
     logging.basicConfig(level=logging.INFO)
@@ -41,7 +74,8 @@ def main():
     # Copy static files to public
     copy_static_to_public("static", "public")
     
-    # TODO: Add markdown to HTML conversion here
+    # Generate the index page
+    generate_page("content/index.md", "template.html", "public/index.html")
 
 if __name__ == "__main__":
     main()
