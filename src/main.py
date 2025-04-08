@@ -67,6 +67,26 @@ def generate_page(from_path, template_path, dest_path):
     with open(dest_path, "w") as f:
         f.write(html)
 
+def generate_pages_recursively(content_dir, template_path, dest_dir):
+    """
+    Recursively generate HTML pages from all markdown files in the content directory.
+    """
+    # Get all items in the content directory
+    for item in os.listdir(content_dir):
+        src_path = os.path.join(content_dir, item)
+        
+        if os.path.isfile(src_path) and src_path.endswith(".md"):
+            # If it's a markdown file, generate the HTML page
+            rel_path = os.path.relpath(src_path, content_dir)
+            # Preserve directory structure by replacing only the last .md with .html
+            dest_path = os.path.join(dest_dir, os.path.dirname(rel_path), os.path.basename(rel_path).replace(".md", ".html"))
+            generate_page(src_path, template_path, dest_path)
+        elif os.path.isdir(src_path):
+            # If it's a directory, recurse into it
+            sub_dest_dir = os.path.join(dest_dir, os.path.basename(src_path))
+            os.makedirs(sub_dest_dir, exist_ok=True)
+            generate_pages_recursively(src_path, template_path, sub_dest_dir)
+
 def main():
     # Set up logging
     logging.basicConfig(level=logging.INFO)
@@ -74,8 +94,8 @@ def main():
     # Copy static files to public
     copy_static_to_public("static", "public")
     
-    # Generate the index page
-    generate_page("content/index.md", "template.html", "public/index.html")
+    # Generate all pages from markdown files
+    generate_pages_recursively("content", "template.html", "public")
 
 if __name__ == "__main__":
     main()
