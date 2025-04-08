@@ -31,4 +31,5 @@ ENV/
 *.swo
 
 # Project specific
-public/
+.DS_Store
+.pytest_cache/

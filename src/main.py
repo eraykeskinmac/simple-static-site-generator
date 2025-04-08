@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import logging
 from markdown_to_html_node import markdown_to_html_node
@@ -36,7 +37,7 @@ def copy_static_to_public(source_dir, dest_dir):
     # Start the recursive copy
     copy_recursive(source_dir, dest_dir)
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath="/"):
     """
     Generate an HTML page from a markdown file using a template.
     """
@@ -60,6 +61,10 @@ def generate_page(from_path, template_path, dest_path):
     # Replace placeholders in the template
     html = template.replace("{{ Title }}", title).replace("{{ Content }}", content)
     
+    # Replace root-relative paths with basepath
+    html = html.replace('href="/', f'href="{basepath}')
+    html = html.replace('src="/', f'src="{basepath}')
+    
     # Create the destination directory if it doesn't exist
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     
@@ -67,7 +72,7 @@ def generate_page(from_path, template_path, dest_path):
     with open(dest_path, "w") as f:
         f.write(html)
 
-def generate_pages_recursively(content_dir, template_path, dest_dir):
+def generate_pages_recursively(content_dir, template_path, dest_dir, basepath="/"):
     """
     Recursively generate HTML pages from all markdown files in the content directory.
     """
@@ -80,22 +85,28 @@ def generate_pages_recursively(content_dir, template_path, dest_dir):
             rel_path = os.path.relpath(src_path, content_dir)
             # Preserve directory structure by replacing only the last .md with .html
             dest_path = os.path.join(dest_dir, os.path.dirname(rel_path), os.path.basename(rel_path).replace(".md", ".html"))
-            generate_page(src_path, template_path, dest_path)
+            generate_page(src_path, template_path, dest_path, basepath)
         elif os.path.isdir(src_path):
             # If it's a directory, recurse into it
             sub_dest_dir = os.path.join(dest_dir, os.path.basename(src_path))
             os.makedirs(sub_dest_dir, exist_ok=True)
-            generate_pages_recursively(src_path, template_path, sub_dest_dir)
+            generate_pages_recursively(src_path, template_path, sub_dest_dir, basepath)
 
 def main():
     # Set up logging
     logging.basicConfig(level=logging.INFO)
     
-    # Copy static files to public
-    copy_static_to_public("static", "public")
+    # Get basepath from command line argument or use default
+    basepath = sys.argv[1] if len(sys.argv) > 1 else "/"
+    
+    # Use docs directory instead of public
+    output_dir = "docs"
+    
+    # Copy static files to docs
+    copy_static_to_public("static", output_dir)
     
     # Generate all pages from markdown files
-    generate_pages_recursively("content", "template.html", "public")
+    generate_pages_recursively("content", "template.html", output_dir, basepath)
 
 if __name__ == "__main__":
     main()
